@@ -77,8 +77,12 @@ class OccupantsController extends Controller
             Session::flash('danger', 'You do not have permission to view this occupant!');
             return redirect()->route('user.dashboard');
         }
-
+        
         $rent = RentHandler::getOccupantRent($id);
+
+        if(!$rent) {
+            Session::flash('warning', 'Something went wrong when retrieving Occupant Rent. Contact a site Admin');
+        }
 
         $balance = RentHandler::getOccupantBalance($id);
 

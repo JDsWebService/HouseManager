@@ -19,7 +19,7 @@ class RentController extends Controller
     public function index()
     {
 
-        $rent = Auth::user()->rent()->orderBy('received_at', 'desc')->get();
+        $rent = Auth::user()->rent()->orderBy('received_at', 'desc')->paginate(30);
 
         return view('rent.index')
                                 ->withRent($rent);
@@ -59,17 +59,6 @@ class RentController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
@@ -77,7 +66,16 @@ class RentController extends Controller
      */
     public function edit($id)
     {
-        //
+        $rent = RentHandler::getRent($id);
+        $occupants = OccupantHandler::getOccupants();
+        if(!$rent) {
+            Session::flash('danger', 'You do not have permission to edit this rent!');
+            return redirect()->route('rent.index');
+        }
+
+        return view('rent.edit')
+                                ->withRent($rent)
+                                ->withOccupants($occupants);
     }
 
     /**
@@ -89,7 +87,14 @@ class RentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $save = RentHandler::save($request, $id);
+        if(!$save) {
+            Session::flash('danger', 'Something went wrong while saving the Rent Entry');
+            return redirect()->route('rent.edit', $id);
+        }
+
+        Session::flash('success', 'Saved Rent Entry successfully!');
+        return redirect()->route('rent.index');
     }
 
     /**
@@ -100,6 +105,14 @@ class RentController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $delete = RentHandler::delete($id);
+
+        if(!$delete) {
+            Session::flash('danger', 'You do not have permission to delete this rent entry!');
+            return redirect()->route('rent.index');
+        }
+
+        Session::flash('success', 'You have deleted the Rent Entry Successfully!');
+        return redirect()->route('rent.index');
     }
 }

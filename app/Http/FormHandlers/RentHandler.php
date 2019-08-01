@@ -7,13 +7,18 @@ use App\Http\FormHandlers\OccupantHandler;
 use App\Http\Requests\RentRequest as Request;
 use App\Models\Rent;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Mews\Purifier\Facades\Purifier;
 
 class RentHandler {
 
 	public static function save(Request $request, $id = null) {
 
-		$rent = new Rent;
+		if($id !== null) {
+			$rent = Rent::find($id);
+		} else {
+			$rent = new Rent;	
+		}
 
 		$rent->occupant_id = $request->occupant_id;
 		$rent->user_id = Auth::user()->id;
@@ -34,7 +39,21 @@ class RentHandler {
 		$rent = Rent::where('occupant_id', $occupantID)->orderBy('received_at', 'desc')->get();
 
 		if(!$rent->count()) {
-			return null;
+			return false;
+		}
+
+		if(!self::checkAuth($rent[0])) {
+			return false;
+		}
+
+		return $rent;
+	}
+
+	public static function getRent($rentID) {
+		$rent = Rent::find($rentID);
+
+		if(!self::checkAuth($rent)) {
+			return false;
 		}
 
 		return $rent;
@@ -61,10 +80,28 @@ class RentHandler {
 
 		return $balance;
 
-
 	}
 
+	public static function delete($id) {
+		$rent = Rent::find($id);
 
+		if(!self::checkAuth($rent)) {
+			return false;
+		}
+
+		if($rent->delete()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private static function checkAuth($rent) {
+		if($rent->user_id === Auth::user()->id) {
+			return true;
+		}
+		return false;
+	}
 
 
 }

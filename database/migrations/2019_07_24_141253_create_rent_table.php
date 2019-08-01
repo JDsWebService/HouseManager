@@ -18,7 +18,7 @@ class CreateRentTable extends Migration
             $table->unsignedBigInteger('occupant_id');
             $table->unsignedBigInteger('user_id');
             $table->decimal('amount');
-            $table->integer('check_number')->nullable();
+            $table->bigInteger('check_number')->nullable();
             $table->date('received_at');
             $table->timestamps();
         });

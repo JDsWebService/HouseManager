@@ -93,7 +93,7 @@ class HousesHandler {
 		if($house->user_id === Auth::user()->id) {
 			return true;
 		}
-		return false;;
+		return false;
 	}
 
 }
